@@ -26,7 +26,6 @@ static int thread_wrapper(void *arg) {
     return 0;
 }
 
-
 int CEthread_create(CEthread *thread, void *(*start_routine)(void *), void *arg) {
     // Reservar memoria para la pila (debe estar alineada correctamente)
     thread->stack = mmap(NULL, STACK_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_GROWSDOWN, -1, 0);
@@ -35,49 +34,36 @@ int CEthread_create(CEthread *thread, void *(*start_routine)(void *), void *arg)
         return -1;
     }
 
-    // Asegurarse de que el puntero a la pila esté alineado correctamente (hacia el final de la memoria asignada)
-    void *stack_top = thread->stack + STACK_SIZE;
+    // Preparar los argumentos para el hilo
+    void **args = (void **)malloc(2 * sizeof(void *));
+    args[0] = start_routine;
+    args[1] = arg;
 
-    // Crear argumentos para la función del hilo
-    void *args[2] = { start_routine, arg };
-
-    // Crear el hilo usando clone (similar a fork pero comparte el espacio de direcciones)
-    thread->tid = clone(thread_wrapper, stack_top, CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD, args);
+    // Crear el hilo usando clone
+    thread->tid = clone(thread_wrapper, (char *)thread->stack + STACK_SIZE, CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD | CLONE_SYSVSEM, args);
     if (thread->tid == -1) {
         perror("Error al crear el hilo");
         munmap(thread->stack, STACK_SIZE);
+        free(args);
         return -1;
     }
 
     return 0;
 }
-
-
 
 int CEthread_join(CEthread thread) {
     // Esperar a que el hilo termine
-    while (syscall(SYS_tgkill, getpid(), thread.tid, 0) == 0) {
-        // El hilo sigue corriendo, yield para no ocupar CPU
-        sched_yield();
-    }
-
-    // Verificar que el hilo ha terminado
-    if (syscall(SYS_tgkill, getpid(), thread.tid, 0) != 0 && errno == ESRCH) {
-        // El hilo ha terminado, ahora es seguro liberar la pila
-        munmap(thread.stack, STACK_SIZE);
-    } else {
-        // El hilo no ha terminado por algún motivo inesperado
-        perror("Error: El hilo no ha terminado correctamente");
+    int status;
+    if (waitpid(thread.tid, &status, __WCLONE) == -1) {
+        perror("Error al esperar el hilo");
         return -1;
     }
-
     return 0;
 }
 
-
-// Terminar el hilo actual
 void CEthread_exit() {
-    syscall(SYS_exit, 0);  // Terminar el hilo
+    // Terminar el hilo
+    syscall(SYS_exit, 0);
 }
 
 // Inicializar el mutex

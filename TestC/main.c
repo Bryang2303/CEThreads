@@ -127,9 +127,13 @@ int main() {
 typedef struct {
     int id;           // ID del barco
     int tiempo;       // Tiempo que le toma cruzar el canal
+    int tiempo_restante; // Tiempo restante para completar el cruce
     int prioridad;    // Prioridad del barco (mayor valor = mayor prioridad)
     int lado;         // 0 = Izquierda (Atlántico), 1 = Derecha (Pacífico)
     int tipo;         // Tipo de barco: 0 = Normal, 1 = Pesquero, 2 = Patrulla
+    int arrival_time; // Tiempo de llegada del barco al canal
+    pthread_t hilo;   // Hilo asociado al barco
+    int en_ejecucion; // 0 = No, 1 = Sí
 } Barco;
 int W;
 int Letrero;
@@ -285,17 +289,20 @@ void ejecutar_Priority_Letrero(Barco* barcos_izquierda, Barco* barcos_derecha, i
 int leer_barcos_desde_archivo(Barco* barcos, const char* nombre_archivo) {
     FILE* archivo = fopen(nombre_archivo, "r");
     if (archivo == NULL) {
-        perror("Error al abrir el archivo barcos.txt");
+        perror("Error al abrir el archivo ships.txt");
         return -1;
     }
 
     int i = 0;
-    while (fscanf(archivo, "%d %d %d %d %d", 
+    while (fscanf(archivo, "%d %d %d %d %d %d %d %d", 
                   &barcos[i].id, 
-                  &barcos[i].tiempo, 
+                  &barcos[i].tiempo,
+                  &barcos[i].tiempo_restante, 
                   &barcos[i].prioridad, 
                   &barcos[i].lado, 
-                  &barcos[i].tipo) != EOF) {
+                  &barcos[i].tipo,
+                  &barcos[i].arrival_time,
+                  &barcos[i].en_ejecucion) != EOF) {
         i++;
         if (i >= MAX_BARCOS) {
             printf("Se alcanzó el número máximo de barcos soportado.\n");

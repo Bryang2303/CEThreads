@@ -118,6 +118,10 @@ int main() {
 #include <stdlib.h>  // Para usar qsort
 #include <time.h>
 #include <stdbool.h>
+#include <termios.h>
+#include <fcntl.h>
+
+#define MAX_BARCOS 100
 
 // Estructura de un barco
 typedef struct {
@@ -127,9 +131,13 @@ typedef struct {
     int lado;         // 0 = Izquierda (Atlántico), 1 = Derecha (Pacífico)
     int tipo;         // Tipo de barco: 0 = Normal, 1 = Pesquero, 2 = Patrulla
 } Barco;
-int W = 3;
-int Letrero = 3;
+int W;
+int Letrero;
 bool estadoL = false;  // Variable que se enciende/apaga
+char metodo[20];
+int largo_canal;
+int velocidad_barco;
+int cantidad_barcos;
 
 // Función que simula el cruce del canal por un barco
 void* cruzar_canal(void* arg) {
@@ -274,20 +282,65 @@ void ejecutar_Priority_Letrero(Barco* barcos_izquierda, Barco* barcos_derecha, i
     ejecutar_FCFS_Letrero(barcos_izquierda, barcos_derecha, num_barcos_izquierda, num_barcos_derecha);  // Reutilizamos la lógica de FCFS pero con la lista ordenada
 }
 
+int leer_barcos_desde_archivo(Barco* barcos, const char* nombre_archivo) {
+    FILE* archivo = fopen(nombre_archivo, "r");
+    if (archivo == NULL) {
+        perror("Error al abrir el archivo barcos.txt");
+        return -1;
+    }
+
+    int i = 0;
+    while (fscanf(archivo, "%d %d %d %d %d", 
+                  &barcos[i].id, 
+                  &barcos[i].tiempo, 
+                  &barcos[i].prioridad, 
+                  &barcos[i].lado, 
+                  &barcos[i].tipo) != EOF) {
+        i++;
+        if (i >= MAX_BARCOS) {
+            printf("Se alcanzó el número máximo de barcos soportado.\n");
+            break;
+        }
+    }
+
+    fclose(archivo);
+    return i;  // Retorna el número de barcos leídos
+}
+
+
+
 int main() {
+
+     FILE* file = fopen("canal.txt", "r");
+    if (file == NULL) {
+        perror("Error al abrir el archivo de configuración");
+        exit(EXIT_FAILURE);
+    }
+
+    fscanf(file, "Metodo: %s\n", metodo);
+    fscanf(file, "Largo del canal: %d\n", &largo_canal);
+    fscanf(file, "Velocidad del barco: %d\n", &velocidad_barco);
+    fscanf(file, "Cantidad de barcos: %d\n", &cantidad_barcos);
+    fscanf(file, "Cambio de letrero: %d\n", &Letrero);
+    fscanf(file, "Parametro W: %d\n", &W);
     
-    // Creamos una cola de barcos
-    Barco barcos[] = {
-        {1, 3, 2, 0, 0},  // Barco 1, Normal, lado izquierdo, prioridad 1
-        {2, 1, 3, 1, 1},  // Barco 2, Pesquero, lado derecho, prioridad 3
-        {3, 2, 1, 0, 2},  // Barco 3, Patrulla, lado izquierdo, prioridad 2
-        {4, 4, 4, 1, 0},  // Barco 4, Normal, lado derecho, prioridad 1
-        {5, 1, 5, 0, 1},  // Barco 5, Pesquero, lado izquierdo, prioridad 5
-        {6, 3, 1, 1, 2},  // Barco 6, Patrulla, lado derecho, prioridad 4
-        {7, 2, 2, 0, 1},  // Barco 7, Patrulla, lado izquierdo, prioridad 2
-    };
+    fclose(file);
+
+    // Puedes ahora utilizar las variables globales en el programa
+    // Ejemplo de impresión para verificar los valores
+    printf("Metodo: %s\n", metodo);
+    printf("Largo del canal: %d\n", largo_canal);
+    printf("Velocidad del barco: %d\n", velocidad_barco);
+    printf("Cantidad de barcos: %d\n", cantidad_barcos);
+    printf("Cambio de letrero: %d\n", Letrero);
+    printf("Parametro W: %d\n", W);
     
-    int num_barcos = sizeof(barcos) / sizeof(barcos[0]);
+    Barco barcos[MAX_BARCOS];
+    int num_barcos = leer_barcos_desde_archivo(barcos, "ships.txt");
+
+    if (num_barcos == -1) {
+        return 1;  // Error al leer el archivo
+    }
 
     // Listas separadas para barcos en lado izquierdo (Atlántico) y lado derecho (Pacífico)
     Barco barcos_izquierda[num_barcos];  // Lista para los barcos en el lado izquierdo

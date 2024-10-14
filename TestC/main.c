@@ -499,23 +499,23 @@ int comparar_por_prioridad(const void* a, const void* b) {
 
 // Función para ejecutar el algoritmo FCFS para una lista de barcos
 void ejecutar_FCFS(Barco2* barcos, int num_barcos) {
-    pthread_t hilos[num_barcos];
+    CEthread hilos[num_barcos];
 
     
     for (int i = 0; i < num_barcos; i++) {
-        //CEthread_create(&hilos[i], cruzar_canal, &barcos[i]);  // Crear hilo usando CEThreads
+        CEthread_create(&hilos[i], cruzar_canal, &barcos[i]);  // Crear hilo usando CEThreads
 
-        pthread_create(&hilos[i], NULL, cruzar_canal, &barcos[i]);
-        //CEthread_join(hilos[i]);  // Esperar a que el hilo termine con CEThreads
+        //pthread_create(&hilos[i], NULL, cruzar_canal, &barcos[i]);
+        CEthread_join(hilos[i]);  // Esperar a que el hilo termine con CEThreads
 
-        pthread_join(hilos[i], NULL);  // Esperamos a que el barco termine antes de pasar al siguiente
+        //pthread_join(hilos[i], NULL);  // Esperamos a que el barco termine antes de pasar al siguiente
     }
 }
 
 // Función para ejecutar el algoritmo FCFS para una lista de barcos
 void ejecutar_FCFS_Equidad(Barco2* barcos_izquierda, Barco2* barcos_derecha, int num_barcos_izquierda, int num_barcos_derecha) {
-    pthread_t hilosI[num_barcos_izquierda];
-    pthread_t hilosD[num_barcos_derecha];
+    //pthread_t hilosI[num_barcos_izquierda];
+    //pthread_t hilosD[num_barcos_derecha];
     int contI = 0;
     int contD = 0;
     
@@ -526,8 +526,8 @@ void ejecutar_FCFS_Equidad(Barco2* barcos_izquierda, Barco2* barcos_derecha, int
                 //CEthread_create(&hilosI[contI], cruzar_canal, &barcos_izquierda[contI]);
                 //CEthread_join(hilosI[contI]);  // Esperar a que el hilo termine con CEThreads
 
-                pthread_create(&hilosI[contI], NULL, cruzar_canal, &barcos_izquierda[contI]);
-                pthread_join(hilosI[contI], NULL);  // Esperamos a que el barco termine antes de pasar al siguiente
+                //pthread_create(&hilosI[contI], NULL, cruzar_canal, &barcos_izquierda[contI]);
+                //pthread_join(hilosI[contI], NULL);  // Esperamos a que el barco termine antes de pasar al siguiente
                 contI++;
             }
         }
@@ -536,8 +536,8 @@ void ejecutar_FCFS_Equidad(Barco2* barcos_izquierda, Barco2* barcos_derecha, int
                 //CEthread_create(&hilosD[contD], cruzar_canal, &barcos_derecha[contD]);
                 //CEthread_join(hilosD[contD]);  // Esperar a que el hilo termine con CEThreads
 
-                pthread_create(&hilosD[contD], NULL, cruzar_canal, &barcos_derecha[contD]);
-                pthread_join(hilosD[contD], NULL);  // Esperamos a que el barco termine antes de pasar al siguiente
+                //pthread_create(&hilosD[contD], NULL, cruzar_canal, &barcos_derecha[contD]);
+                //pthread_join(hilosD[contD], NULL);  // Esperamos a que el barco termine antes de pasar al siguiente
                 contD++;
             }
         }
@@ -545,8 +545,8 @@ void ejecutar_FCFS_Equidad(Barco2* barcos_izquierda, Barco2* barcos_derecha, int
 }
 
 void ejecutar_FCFS_Letrero(Barco2* barcos_izquierda, Barco2* barcos_derecha, int num_barcos_izquierda, int num_barcos_derecha) {
-    pthread_t hilosI[num_barcos_izquierda];
-    pthread_t hilosD[num_barcos_derecha];
+    //pthread_t hilosI[num_barcos_izquierda];
+    //pthread_t hilosD[num_barcos_derecha];
     int contI = 0;
     int contD = 0;
     int time = 0;
@@ -563,18 +563,18 @@ void ejecutar_FCFS_Letrero(Barco2* barcos_izquierda, Barco2* barcos_derecha, int
         }
         if (estadoL){
             time+=barcos_derecha[contD].tiempo;
-            pthread_create(&hilosD[contD], NULL, cruzar_canal, &barcos_derecha[contD]);
+            //pthread_create(&hilosD[contD], NULL, cruzar_canal, &barcos_derecha[contD]);
             //CEthread_create(&hilosD[contD], cruzar_canal, &barcos_derecha[contD]);  // Crear hilo usando CEThreads
             //CEthread_join(hilosD[contD]);  // Esperar a que el hilo termine con CEThreads
-            pthread_join(hilosD[contD], NULL);  // Esperamos a que el barco termine antes de pasar al siguiente
+            //pthread_join(hilosD[contD], NULL);  // Esperamos a que el barco termine antes de pasar al siguiente
             contD++;
         } else {
             time+=barcos_izquierda[contI].tiempo;
-            pthread_create(&hilosI[contI], NULL, cruzar_canal, &barcos_izquierda[contI]);
+            //pthread_create(&hilosI[contI], NULL, cruzar_canal, &barcos_izquierda[contI]);
             //CEthread_create(&hilosI[contI], cruzar_canal, &barcos_izquierda[contI]);
             //CEthread_join(hilosI[contI]);  // Esperar a que el hilo termine con CEThreads
 
-            pthread_join(hilosI[contI], NULL);  // Esperamos a que el barco termine antes de pasar al siguiente
+            //pthread_join(hilosI[contI], NULL);  // Esperamos a que el barco termine antes de pasar al siguiente
             contI++;
         }
         if (time>=Letrero){
@@ -663,7 +663,7 @@ int main() {
 
     //ejecutar_FCFS_Letrero(barcos_izquierda2, barcos_derecha2, num_barcos_izquierda2, num_barcos_derecha2);
 
-    //ejecutar_FCFS(barcos2, num_barcos2);
+    ejecutar_FCFS(barcos2, num_barcos2);
 
     //printf("\n--- Ejecución con SJF con Equidad ---\n");
     //ejecutar_SJF_Equidad(barcos_izquierda, barcos_derecha2, num_barcos_izquierda2, num_barcos_derecha2);

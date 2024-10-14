@@ -9,7 +9,7 @@
 #include <linux/futex.h>  // Para futex
 #include <stdlib.h>
 
-#define STACK_SIZE 8192
+#define STACK_SIZE (1024 * 1024)  // Tamaño de la pila de los hilos
 
 // Estructura del hilo
 typedef struct {

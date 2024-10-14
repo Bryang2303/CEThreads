@@ -52,10 +52,10 @@ int CEthread_create(CEthread *thread, void *(*start_routine)(void *), void *arg)
 }
 
 int CEthread_join(CEthread thread) {
-    // Esperar a que el hilo termine
-    int status;
-    if (waitpid(thread.tid, &status, __WCLONE) == -1) {
-        perror("Error al esperar el hilo");
+    siginfo_t info;
+    int ret = syscall(SYS_waitid, P_PID, thread.tid, &info, WEXITED | WNOWAIT, NULL);
+    if (ret == -1) {
+        //perror("Error al esperar el hilo");
         return -1;
     }
     return 0;

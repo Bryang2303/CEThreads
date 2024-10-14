@@ -1,0 +1,6 @@
+Metodo: Equidad
+Largo del canal: 100
+Velocidad del barco: 20
+Cantidad de barcos: 7
+Cambio de letrero: 5
+Parametro W: 3

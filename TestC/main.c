@@ -20,16 +20,20 @@ typedef struct {
     CEthread hilo;   // Hilo asociado al barco
     int en_ejecucion; // 0 = No, 1 = Sí
 } Barco2;
-int W = 3;  // Tamaño del lote
+int W;  // Tamaño del lote
 int barcos_cruzados_izq = 0;  // Barcos cruzados desde el lado izquierdo
 int barcos_cruzados_der = 0;  // Barcos cruzados desde el lado derecho
 int lado_actual = 0;  // 0 = Atlántico, 1 = Pacífico
 int contador_lado = 0;  // Contador de barcos que han cruzado consecutivamente desde un lado
-int letrero = 0;        // 0 = Izquierda, 1 = Derecha
+int letrero;        // 0 = Izquierda, 1 = Derecha
 int intervalo_letrero = 5; // Tiempo en segundos antes de cambiar el letrero
 int quantum = 2;        // Quantum de tiempo (en segundos) para Round Robin
 int Letrero = 3;
 bool estadoL = false;  // Variable que se enciende/apaga
+char metodo[20];
+int largo_canal;
+int velocidad_barco;
+int cantidad_barcos;
 
 //pthread_mutex_t mutex;  // Mutex para proteger la interrupción
 CEmutex mutex;  // Mutex usando CEThreads
@@ -623,21 +627,79 @@ void ejecutar_Priority_Letrero(Barco2* barcos_izquierda, Barco2* barcos_derecha,
     qsort(barcos_derecha, num_barcos_derecha, sizeof(Barco2), comparar_por_prioridad);
     ejecutar_FCFS_Letrero(barcos_izquierda, barcos_derecha, num_barcos_izquierda, num_barcos_derecha);  // Reutilizamos la lógica de FCFS pero con la lista ordenada
 }
+int leer_barcos_desde_archivo(Barco* barcos, const char* nombre_archivo) {
+    FILE* archivo = fopen(nombre_archivo, "r");
+    if (archivo == NULL) {
+        perror("Error al abrir el archivo barcos.txt");
+        return -1;
+    }
+
+    int i = 0;
+    while (fscanf(archivo, "%d %d %d %d %d %d %d %d", 
+                  &barcos[i].id, 
+                  &barcos[i].tiempo,
+                  &barcos[i].tiempo_restante 
+                  &barcos[i].prioridad, 
+                  &barcos[i].lado, 
+                  &barcos[i].tipo,
+                  &barcos[i].arrival_time
+                  &barcos[i].en_ejecucion) != EOF) {
+        i++;
+        if (i >= MAX_BARCOS) {
+            printf("Se alcanzó el número máximo de barcos soportado.\n");
+            break;
+        }
+    }
+
+    fclose(archivo);
+    return i;  // Retorna el número de barcos leídos
+}
 
 int main() {
+     FILE* file = fopen("canal.txt", "r");
+    if (file == NULL) {
+        perror("Error al abrir el archivo de configuración");
+        exit(EXIT_FAILURE);
+    }
+
+    fscanf(file, "Metodo: %s\n", metodo);
+    fscanf(file, "Largo del canal: %d\n", &largo_canal);
+    fscanf(file, "Velocidad del barco: %d\n", &velocidad_barco);
+    fscanf(file, "Cantidad de barcos: %d\n", &cantidad_barcos);
+    fscanf(file, "Cambio de letrero: %d\n", &letrero);
+    fscanf(file, "Parametro W: %d\n", &W);
+    
+    fclose(file);
+
+    // Puedes ahora utilizar las variables globales en el programa
+    // Ejemplo de impresión para verificar los valores
+    printf("Metodo: %s\n", metodo);
+    printf("Largo del canal: %d\n", largo_canal);
+    printf("Velocidad del barco: %d\n", velocidad_barco);
+    printf("Cantidad de barcos: %d\n", cantidad_barcos);
+    printf("Cambio de letrero: %d\n", letrero);
+    printf("Parametro W: %d\n", W);
+    
+    Barco barcos[MAX_BARCOS];
+    int num_barcos = leer_barcos_desde_archivo(barcos, "ships.txt");
+
+    if (num_barcos == -1) {
+        return 1;  // Error al leer el archivo
+    }
+
 
     // Inicializamos el mutex
     //pthread_mutex_init(&mutex, NULL);
 
     // Creamos una lista de barcos
-    Barco2 barcos2[] = {
+    /*Barco2 barcos2[] = {
         {1, 7, 7, 1, 0, 0, 0, 0},  // Barco 1, llega en t0
         {2, 2, 2, 2, 1, 1, 3, 0},  // Barco 2, llega en t3
         {3, 1, 1, 5, 1, 1, 1, 0},  // Barco 3, llega en t1
         {4, 6, 6, 5, 0, 1, 0, 0},  // Barco 4, llega en t0
         {5, 4, 4, 3, 1, 1, 3, 0},  // Barco 5
         {6, 3, 3, 2, 1, 0, 1, 0},  // Barco 6
-    };
+    };*/
     
     int num_barcos2 = sizeof(barcos2) / sizeof(barcos2[0]);
 

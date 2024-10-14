@@ -27,7 +27,9 @@ int lado_actual = 0;  // 0 = Atlántico, 1 = Pacífico
 int contador_lado = 0;  // Contador de barcos que han cruzado consecutivamente desde un lado
 int letrero = 0;        // 0 = Izquierda, 1 = Derecha
 int intervalo_letrero = 5; // Tiempo en segundos antes de cambiar el letrero
-
+int quantum = 2;        // Quantum de tiempo (en segundos) para Round Robin
+int Letrero = 3;
+bool estadoL = false;  // Variable que se enciende/apaga
 
 //pthread_mutex_t mutex;  // Mutex para proteger la interrupción
 CEmutex mutex;  // Mutex usando CEThreads
@@ -298,10 +300,7 @@ void ejecutar_RealTime_Letrero(Barco2* barcos, int num_barcos) {
 }
 
 
-//int tiempo_global = 0;  // Tiempo actual del sistema
-int quantum = 2;        // Quantum de tiempo (en segundos) para Round Robin
-int Letrero = 3;
-bool estadoL = false;  // Variable que se enciende/apaga
+
 
 // Función que simula el cruce del canal por un barco durante su quantum
 void cruzar_canal_quantum(Barco2* barco) {
@@ -667,17 +666,17 @@ int main() {
     //ejecutar_FCFS(barcos2, num_barcos2);
 
     //printf("\n--- Ejecución con SJF con Equidad ---\n");
-    //ejecutar_SJF_Equidad(barcos_izquierda, barcos_derecha, num_barcos_izquierda, num_barcos_derecha);
+    //ejecutar_SJF_Equidad(barcos_izquierda, barcos_derecha2, num_barcos_izquierda2, num_barcos_derecha2);
 
-    //ejecutar_SJF_Letrero(barcos_izquierda, barcos_derecha, num_barcos_izquierda, num_barcos_derecha);
+    //ejecutar_SJF_Letrero(barcos_izquierda, barcos_derecha2, num_barcos_izquierda2, num_barcos_derecha2);
 
     //printf("\n--- Ejecución con SJF (Shortest Job First) ---\n");
-    //ejecutar_SJF(barcos, num_barcos);
+    //ejecutar_SJF(barcos2, num_barcos2);
 
     //printf("\n--- Ejecución con Prioridad con Equidad ---\n");
     //ejecutar_Priority_Equidad(barcos_izquierda2, barcos_derecha2, num_barcos_izquierda2, num_barcos_derecha2);
 
-    //ejecutar_Priority_Letrero(barcos_izquierda, barcos_derecha, num_barcos_izquierda, num_barcos_derecha);
+    //ejecutar_Priority_Letrero(barcos_izquierda2, barcos_derecha2, num_barcos_izquierda2, num_barcos_derecha2);
 
     //printf("\n--- Ejecución con Prioridad ---\n");
     //ejecutar_Priority(barcos2, num_barcos2);
